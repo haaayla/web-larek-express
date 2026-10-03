@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { TITLE_MIN_LENGTH, TITLE_MAX_LENGTH } from '../constants';
+import { removeImage } from '../utils/files';
 
 export interface IProductImage {
   fileName: string;
@@ -43,6 +44,18 @@ const productSchema = new mongoose.Schema<IProduct>({
     type: Number,
     default: null,
   },
+});
+
+productSchema.post('findOneAndDelete', async (product) => {
+  if (!product) {
+    return;
+  }
+
+  const { fileName } = product.image;
+  const isUsed = await mongoose.model<IProduct>('product').exists({ 'image.fileName': fileName });
+  if (!isUsed) {
+    await removeImage(fileName);
+  }
 });
 
 export default mongoose.model<IProduct>('product', productSchema);

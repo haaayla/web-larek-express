@@ -33,7 +33,8 @@ const createOrder = async (
       return next(new BadRequestError(`Товар с id ${notForSale._id} не продается`));
     }
 
-    const sum = products.reduce((acc, product) => acc + (product.price ?? 0), 0);
+    const prices = new Map(products.map((product) => [product._id.toString(), product.price ?? 0]));
+    const sum = items.reduce((acc, id) => acc + (prices.get(id) ?? 0), 0);
     if (sum !== total) {
       return next(new BadRequestError('Неверная сумма заказа'));
     }
